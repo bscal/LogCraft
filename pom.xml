@@ -5,11 +5,6 @@
   <version>1.0.0</version>
   <name>LogCraft</name>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.release>11</maven.compiler.release>
-	</properties>
-
 	<repositories>
 		<repository>
 		    <id>papermc</id>
