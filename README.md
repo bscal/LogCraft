@@ -43,8 +43,8 @@ public class Main extends JavaPlugin
 </repository>
 
 <dependency>
-  <groupId>com.github.bscal</groupId>
-	<artifactId>LogCraft</artifactId>
-	<version>TAG <-- Replace this</version>
+    <groupId>com.github.bscal</groupId>
+    <artifactId>LogCraft</artifactId>
+    <version>TAG <-- Replace this</version>
 </dependency>
 ```
