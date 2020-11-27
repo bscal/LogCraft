@@ -63,11 +63,9 @@ public class LogCraft
 	public static void LogTable(char border, char topBorder, char edge, int width, String keyTitle, String valTitle,
 			Object[] keys, Object[] values)
 	{
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(CreateSpacer(topBorder, edge, width));
-		sb.append(FmtLine(border, border, width, keyTitle, valTitle));
-		sb.append(CreateSpacer(topBorder, edge, width));
+		Log(CreateSpacer(topBorder, edge, width));
+		Log(FmtLine(border, border, width, keyTitle, valTitle));
+		Log(CreateSpacer(topBorder, edge, width));
 		for (int i = 0; i < keys.length; i++)
 		{
 			String key = "NULL";
@@ -79,9 +77,9 @@ public class LogCraft
 			if (i < values.length || values[i] != null)
 				val = values[i].toString();
 
-			sb.append(FmtLine(width, key, val));
+			Log(FmtLine(width, key, val));
 		}
-		sb.append(CreateSpacer(topBorder, edge, width));
+		Log(CreateSpacer(topBorder, edge, width));
 	}
 
 	private static String CreateSpacer(char chr, char edge, int width)
@@ -176,7 +174,7 @@ public class LogCraft
 	private static <K, V> String LogMap(Map<K, V> map, int sub)
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("\n[");
+		sb.append("\n\t[");
 		for (var pair : map.entrySet())
 		{
 			sb.append('\n');
@@ -192,7 +190,7 @@ public class LogCraft
 			else
 				sb.append(pair.getKey());
 
-			sb.append('=');
+			sb.append(" = ");
 
 			if (pair.getValue().getClass().isArray())
 				sb.append(LogArray((Object[]) pair.getValue(), false));
@@ -203,7 +201,7 @@ public class LogCraft
 			else
 				sb.append(pair.getValue());
 		}
-		sb.append(']');
+		sb.append("\n\t]");
 		String s = sb.toString();
 		if (sub == 1)
 			Log(s);
