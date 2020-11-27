@@ -13,7 +13,7 @@ I make. Not really a finished product or well documented.
 
 ### Usage
 
-1. Added the library to your pom.
+1. Added the library to your pom (This is not a plugin but a library).
 2. Initialize the library with your plugin.
 3. Done.
 
@@ -26,7 +26,7 @@ public class Main extends JavaPlugin
     public void onEnable()
     {
         LogCraft.Init(this);
-		
+
         LogCraft.Log("Testing 123 Testing", getName(), health);
         LogCraft.LogErr("Errored...");
     }
@@ -38,8 +38,8 @@ public class Main extends JavaPlugin
 ### Maven
 ```
 <repository>
-	<id>jitpack.io</id>
-	<url>https://jitpack.io</url>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
 </repository>
 
 <dependency>
