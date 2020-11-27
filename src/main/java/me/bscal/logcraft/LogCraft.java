@@ -136,25 +136,35 @@ public class LogCraft
 		Log(StringUtils.join(msg, ", "));
 	}
 
-	public static void LogArray(Object[] array)
+	@SuppressWarnings("unchecked")
+	private static String LogArray(Object[] array, boolean root)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("Printing Array (Size: " + array.length + ") [");
 		for (int i = 0; i < array.length; i++)
 		{
 			if (array[i].getClass().isArray())
-				LogArray((Object[]) array[i]);
+				sb.append(LogArray((Object[]) array[i], false));
 			else if (array[i] instanceof List)
-				LogArray((List<Object>) array[i]);
+				sb.append(LogArray(((List<Object>) array[i]).toArray(), false));
 			sb.append(array[i]);
 			sb.append(", ");
 		}
 		sb.append(']');
+		String s = sb.toString();
+		if (root)
+			Log(s);
+		return s;
 	}
 
+	public static void LogArray(Object[] array)
+	{
+		LogArray(array, true);
+	}
+	
 	public static <T> void LogArray(List<T> array)
 	{
-		LogArray(array.toArray());
+		LogArray(array.toArray(), true);
 	}
 
 	public static <K, V> void LogMap(Map<K, V> map)
@@ -162,10 +172,11 @@ public class LogCraft
 		LogMap(map, 1);
 	}
 
-	private static <K, V> void LogMap(Map<K, V> map, int sub)
+	@SuppressWarnings("unchecked")
+	private static <K, V> String LogMap(Map<K, V> map, int sub)
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append('[');
+		sb.append("\n[");
 		for (var pair : map.entrySet())
 		{
 			sb.append('\n');
@@ -173,27 +184,30 @@ public class LogCraft
 				sb.append('\t');
 
 			if (pair.getKey().getClass().isArray())
-				LogArray((Object[]) pair.getKey());
+				sb.append(LogArray((Object[]) pair.getKey(), false));
 			else if (pair.getKey() instanceof List)
-				LogArray((List<Object>) pair.getKey());
+				sb.append(LogArray(((List<Object>) pair.getKey()).toArray(), false));
 			else if (pair.getKey() instanceof Map)
-				LogMap((Map<Object, Object>) pair.getKey(), sub++);
+				sb.append(LogMap((Map<Object, Object>) pair.getKey(), sub++));
 			else
 				sb.append(pair.getKey());
 
 			sb.append('=');
 
 			if (pair.getValue().getClass().isArray())
-				LogArray((Object[]) pair.getValue());
+				sb.append(LogArray((Object[]) pair.getValue(), false));
 			else if (pair.getValue() instanceof List)
-				LogArray((List<Object>) pair.getValue());
+				sb.append(LogArray(((List<Object>) pair.getValue()).toArray(), false));
 			else if (pair.getValue() instanceof Map)
-				LogMap((Map<Object, Object>) pair.getValue(), sub++);
+				sb.append(LogMap((Map<Object, Object>) pair.getValue(), sub++));
 			else
 				sb.append(pair.getValue());
 		}
 		sb.append(']');
-		Log(sb.toString());
+		String s = sb.toString();
+		if (sub == 1)
+			Log(s);
+		return s;
 	}
 
 	public <K, V> void LogMapAsTable(Map<K, V> map)
