@@ -152,17 +152,17 @@ public class LogCraft
 		sb.append(']');
 	}
 
-	public static <T> void LogArray(List<T> array)
+	public static void LogArray(List<Object> array)
 	{
 		LogArray(array.toArray());
 	}
 
-	public static <K, V> void LogMap(Map<K, V> map)
+	public static void LogMap(Map<Object, Object> map)
 	{
 		LogMap(map, 1);
 	}
 
-	private static <K, V> void LogMap(Map<K, V> map, int sub)
+	private static void LogMap(Map<Object, Object> map, int sub)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append('[');
@@ -193,6 +193,7 @@ public class LogCraft
 				sb.append(pair.getValue());
 		}
 		sb.append(']');
+		Log(sb.toString());
 	}
 
 	public void LogMapAsTable(Map<Object, Object> map)
