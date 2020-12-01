@@ -12,26 +12,39 @@ import org.bukkit.plugin.Plugin;
 public class LogCraft
 {
 
-	static ConsoleCommandSender CS;
+	private static ConsoleCommandSender CS;
 
-	static String FMT_NAME;
+	private static String FMT_NAME;
+	private static ChatColor INFO;
+	private static ChatColor ERR;
 
-	static ChatColor INFO;
-	static ChatColor ERR;
+	private static boolean m_hasInitialized;
 
-	public static void Init(Plugin pl)
+	public static void Init(Plugin pl, LogLevel logLevel)
 	{
 		CS = pl.getServer().getConsoleSender();
 
-		FMT_NAME = MessageFormat.format("{1}[{2}{0}{1}]: ", pl.getName(), ChatColor.DARK_PURPLE,
-				ChatColor.LIGHT_PURPLE);
+		FMT_NAME = MessageFormat
+				.format("{1}[{2}{0}{1}]: ", pl.getName(), ChatColor.DARK_PURPLE, ChatColor.LIGHT_PURPLE);
+
 		INFO = ChatColor.YELLOW;
 		ERR = ChatColor.RED;
+
+		LogLevel.SetLevel(logLevel);
+		m_hasInitialized = true;
+	}
+
+	public static void SendToConsole(String msg, ChatColor color)
+	{
+		if (!m_hasInitialized)
+			System.out.println("[ error ] LogCraft called but has not been initialized.");
+		else
+			CS.sendMessage(FMT_NAME + color + msg);
 	}
 
 	public static void Log(String msg)
 	{
-		CS.sendMessage(FMT_NAME + INFO + msg);
+		SendToConsole(msg, INFO);
 	}
 
 	public static void Log(Object... msg)
@@ -39,10 +52,21 @@ public class LogCraft
 		Log(StringUtils.join(msg, ", "));
 	}
 
+	public static void Log(String pattern, Object... params)
+	{
+		Log(MessageFormat.format(pattern, params));
+	}
+
 	public static void LogFmt(String title, Object... msg)
 	{
-		CS.sendMessage(FMT_NAME + INFO + "========= Printing " + title + " =========\n\t");
-		CS.sendMessage(FMT_NAME + INFO + StringUtils.join(msg, ",\n\t"));
+		SendToConsole("========= Printing " + title + " =========\n\t", INFO);
+		SendToConsole(StringUtils.join(msg, ",\n\t"), INFO);
+	}
+
+	public static void LogFmtErr(String title, Object... msg)
+	{
+		SendToConsole("========= Printing " + title + " =========\n\t", ERR);
+		SendToConsole(StringUtils.join(msg, ",\n\t"), ERR);
 	}
 
 	public static void LogTable(String[] keys, Object[] values)
@@ -74,7 +98,7 @@ public class LogCraft
 			if (keys[i] != null || keys[i] instanceof String && !((String) keys[i]).isBlank())
 				key = keys[i].toString();
 
-			if (i < values.length || values[i] != null)
+			if (i < values.length && values[i] != null)
 				val = values[i].toString();
 
 			Log(FmtLine(width, key, val));
@@ -86,10 +110,7 @@ public class LogCraft
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(edge);
-		for (int i = 0; i < width - 2; i++)
-		{
-			sb.append(chr);
-		}
+		sb.append(String.valueOf(chr).repeat(Math.max(0, width - 2)));
 		sb.append(edge);
 		return sb.toString();
 	}
@@ -103,11 +124,11 @@ public class LogCraft
 	{
 		int trueWidth = width - 7;
 		StringBuilder sb = new StringBuilder();
-		sb.append(border + " ");
+		sb.append(border).append(' ');
 		sb.append(FitStr(trueWidth, key));
-		sb.append(" " + mid + " ");
+		sb.append(' ').append(mid).append(' ');
 		sb.append(FitStr(trueWidth, val));
-		sb.append(" " + border);
+		sb.append(' ').append(border);
 		return sb.toString();
 	}
 
@@ -126,7 +147,7 @@ public class LogCraft
 
 	public static void LogErr(String msg)
 	{
-		CS.sendMessage(FMT_NAME + ERR + msg);
+		SendToConsole(msg, ERR);
 	}
 
 	public static void LogErr(Object... msg)
@@ -134,18 +155,22 @@ public class LogCraft
 		Log(StringUtils.join(msg, ", "));
 	}
 
-	@SuppressWarnings("unchecked")
-	private static String LogArray(Object[] array, boolean root)
+	public static void LogErr(String pattern, Object... params)
+	{
+		LogErr(MessageFormat.format(pattern, params));
+	}
+
+	@SuppressWarnings("unchecked") private static String LogArray(Object[] array, boolean root)
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("Printing Array (Size: " + array.length + ") [");
-		for (int i = 0; i < array.length; i++)
+		sb.append("Printing Array (Size: ").append(array.length).append(") [");
+		for (Object o : array)
 		{
-			if (array[i].getClass().isArray())
-				sb.append(LogArray((Object[]) array[i], false));
-			else if (array[i] instanceof List)
-				sb.append(LogArray(((List<Object>) array[i]).toArray(), false));
-			sb.append(array[i]);
+			if (o.getClass().isArray())
+				sb.append(LogArray((Object[]) o, false));
+			else if (o instanceof List)
+				sb.append(LogArray(((List<Object>) o).toArray(), false));
+			sb.append(o);
 			sb.append(", ");
 		}
 		sb.append(']');
@@ -159,7 +184,7 @@ public class LogCraft
 	{
 		LogArray(array, true);
 	}
-	
+
 	public static <T> void LogArray(List<T> array)
 	{
 		LogArray(array.toArray(), true);
@@ -170,16 +195,14 @@ public class LogCraft
 		LogMap(map, 1);
 	}
 
-	@SuppressWarnings("unchecked")
-	private static <K, V> String LogMap(Map<K, V> map, int sub)
+	@SuppressWarnings("unchecked") private static <K, V> String LogMap(Map<K, V> map, int sub)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("\n\t[");
 		for (var pair : map.entrySet())
 		{
 			sb.append('\n');
-			for (int i = 0; i < sub; i++)
-				sb.append('\t');
+			sb.append("\t".repeat(Math.max(0, sub)));
 
 			if (pair.getKey().getClass().isArray())
 				sb.append(LogArray((Object[]) pair.getKey(), false));
@@ -211,5 +234,21 @@ public class LogCraft
 	public <K, V> void LogMapAsTable(Map<K, V> map)
 	{
 		LogTable(48, "Keys", "Values", map.keySet().toArray(), map.values().toArray());
+	}
+
+	public void LogObject(Object obj)
+	{
+		Log("Logging Object: {0} | {1}", obj.getClass().getSimpleName(), obj);
+		for (var field : obj.getClass().getFields())
+		{
+			try
+			{
+				Log("{0} = {1}", field.getName(), field.get(obj));
+			}
+			catch (IllegalAccessException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 }
