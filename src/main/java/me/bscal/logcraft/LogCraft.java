@@ -52,12 +52,12 @@ public class LogCraft
 		Log(StringUtils.join(msg, ", "));
 	}
 
-	public static void Log(String pattern, Object... params)
+	public static void LogFormat(String pattern, Object... params)
 	{
 		Log(MessageFormat.format(pattern, params));
 	}
 
-	public static void LogFmt(String title, Object... msg)
+	public static void LogNewLine(String title, Object... msg)
 	{
 		SendToConsole("========= Printing " + title + " =========\n\t", INFO);
 		SendToConsole(StringUtils.join(msg, ",\n\t"), INFO);
@@ -155,7 +155,7 @@ public class LogCraft
 		Log(StringUtils.join(msg, ", "));
 	}
 
-	public static void LogErr(String pattern, Object... params)
+	public static void LogErrFormat(String pattern, Object... params)
 	{
 		LogErr(MessageFormat.format(pattern, params));
 	}
