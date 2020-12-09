@@ -1,91 +1,92 @@
 package me.bscal.logcraft;
 
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.Plugin;
 
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+
 public class LogCraft
 {
 
-	private static ConsoleCommandSender CS;
+	public final LogLevel level;
 
-	private static String FMT_NAME;
-	private static ChatColor INFO;
-	private static ChatColor ERR;
+	private final ConsoleCommandSender m_cs;
 
-	private static boolean m_hasInitialized;
+	private final String m_formattedName;
+	private final ChatColor m_infoColor;
+	private final ChatColor m_errColor;
 
-	public static void Init(Plugin pl, LogLevel logLevel)
+	public LogCraft(final Plugin plugin, final LogLevel level)
 	{
-		CS = pl.getServer().getConsoleSender();
+		m_cs = plugin.getServer().getConsoleSender();
 
-		FMT_NAME = MessageFormat
-				.format("{1}[{2}{0}{1}]: ", pl.getName(), ChatColor.DARK_PURPLE, ChatColor.LIGHT_PURPLE);
+		m_formattedName = MessageFormat.format("{1}[{2}{0}{1}]: ", plugin.getName(), ChatColor.DARK_PURPLE,
+				ChatColor.LIGHT_PURPLE);
 
-		INFO = ChatColor.YELLOW;
-		ERR = ChatColor.RED;
+		m_infoColor = ChatColor.YELLOW;
+		m_errColor = ChatColor.RED;
 
-		LogLevel.SetLevel(logLevel);
-		m_hasInitialized = true;
+		this.level = level;
 	}
 
-	public static void SendToConsole(String msg, ChatColor color)
-	{
-		if (!m_hasInitialized)
-			System.out.println("[ error ] LogCraft called but has not been initialized.");
-		else
-			CS.sendMessage(FMT_NAME + color + msg);
+	public boolean IsLevel(LogLevel lvl) {
+		return level.id >= lvl.id;
 	}
 
-	public static void Log(String msg)
+	public void SendToConsole(String msg, ChatColor color)
 	{
-		SendToConsole(msg, INFO);
+		m_cs.sendMessage(m_formattedName + color + msg);
 	}
 
-	public static void Log(Object... msg)
+	public void Log(String msg)
+	{
+		SendToConsole(msg, m_infoColor);
+	}
+
+	public void Log(Object... msg)
 	{
 		Log(StringUtils.join(msg, ", "));
 	}
 
-	public static void LogFormat(String pattern, Object... params)
+	public void LogFormat(String pattern, Object... params)
 	{
 		Log(MessageFormat.format(pattern, params));
 	}
 
-	public static void LogNewLine(String title, Object... msg)
+	public void LogNewLine(String title, Object... msg)
 	{
-		SendToConsole("========= Printing " + title + " =========\n\t", INFO);
-		SendToConsole(StringUtils.join(msg, ",\n\t"), INFO);
+		SendToConsole("========= Printing " + title + " =========\n\t", m_infoColor);
+		SendToConsole(StringUtils.join(msg, ",\n\t"), m_infoColor);
 	}
 
-	public static void LogFmtErr(String title, Object... msg)
+	public void LogFmtErr(String title, Object... msg)
 	{
-		SendToConsole("========= Printing " + title + " =========\n\t", ERR);
-		SendToConsole(StringUtils.join(msg, ",\n\t"), ERR);
+		SendToConsole("========= Printing " + title + " =========\n\t", m_errColor);
+		SendToConsole(StringUtils.join(msg, ",\n\t"), m_errColor);
 	}
 
-	public static void LogTable(String[] keys, Object[] values)
+	public void LogTable(String[] keys, Object[] values)
 	{
 		LogTable(32, keys, values);
 	}
 
-	public static void LogTable(int width, Object[] keys, Object[] values)
+	public void LogTable(int width, Object[] keys, Object[] values)
 	{
 		LogTable('*', '*', '*', width, "", "", keys, values);
 	}
 
-	public static void LogTable(int width, String keyTitle, String valTitle, Object[] keys, Object[] values)
+	public void LogTable(int width, String keyTitle, String valTitle, Object[] keys,
+			Object[] values)
 	{
 		LogTable('*', '*', '*', width, keyTitle, valTitle, keys, values);
 	}
 
-	public static void LogTable(char border, char topBorder, char edge, int width, String keyTitle, String valTitle,
-			Object[] keys, Object[] values)
+	public void LogTable(char border, char topBorder, char edge, int width, String keyTitle,
+			String valTitle, Object[] keys, Object[] values)
 	{
 		Log(CreateSpacer(topBorder, edge, width));
 		Log(FmtLine(border, border, width, keyTitle, valTitle));
@@ -106,7 +107,7 @@ public class LogCraft
 		Log(CreateSpacer(topBorder, edge, width));
 	}
 
-	private static String CreateSpacer(char chr, char edge, int width)
+	private String CreateSpacer(char chr, char edge, int width)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(edge);
@@ -115,12 +116,12 @@ public class LogCraft
 		return sb.toString();
 	}
 
-	private static String FmtLine(int width, String key, String val)
+	private String FmtLine(int width, String key, String val)
 	{
 		return FmtLine('*', '*', width, key, val);
 	}
 
-	private static String FmtLine(char border, char mid, int width, String key, String val)
+	private String FmtLine(char border, char mid, int width, String key, String val)
 	{
 		int trueWidth = width - 7;
 		StringBuilder sb = new StringBuilder();
@@ -132,7 +133,7 @@ public class LogCraft
 		return sb.toString();
 	}
 
-	private static String FitStr(int width, String str)
+	private String FitStr(int width, String str)
 	{
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < width; i++)
@@ -145,22 +146,23 @@ public class LogCraft
 		return sb.toString();
 	}
 
-	public static void LogErr(String msg)
+	public void LogErr(String msg)
 	{
-		SendToConsole(msg, ERR);
+		SendToConsole(msg, m_errColor);
 	}
 
-	public static void LogErr(Object... msg)
+	public void LogErr(Object... msg)
 	{
 		Log(StringUtils.join(msg, ", "));
 	}
 
-	public static void LogErrFormat(String pattern, Object... params)
+	public void LogErrFormat(String pattern, Object... params)
 	{
 		LogErr(MessageFormat.format(pattern, params));
 	}
 
-	@SuppressWarnings("unchecked") private static String LogArray(Object[] array, boolean root)
+	@SuppressWarnings("unchecked")
+	private String LogArray(Object[] array, boolean root)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("Printing Array (Size: ").append(array.length).append(") [");
@@ -180,22 +182,23 @@ public class LogCraft
 		return s;
 	}
 
-	public static void LogArray(Object[] array)
+	public void LogArray(Object[] array)
 	{
 		LogArray(array, true);
 	}
 
-	public static <T> void LogArray(List<T> array)
+	public <T> void LogArray(List<T> array)
 	{
 		LogArray(array.toArray(), true);
 	}
 
-	public static <K, V> void LogMap(Map<K, V> map)
+	public <K, V> void LogMap(Map<K, V> map)
 	{
 		LogMap(map, 1);
 	}
 
-	@SuppressWarnings("unchecked") private static <K, V> String LogMap(Map<K, V> map, int sub)
+	@SuppressWarnings("unchecked")
+	private <K, V> String LogMap(Map<K, V> map, int sub)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("\n\t[");
